@@ -14,6 +14,18 @@ function exit() {
     process.exit()
 };
 
+function getDepartments() {
+    return db.promise().query('SELECT * FROM Department');
+};
+
+function getRoles() {
+    return db.promise().query('SELECT * FROM Role');
+};
+
+function getEmployees() {
+    return db.promise().query('SELECT * FROM Employee');
+}
+
 function addDepartment() {
     inquirer
         .prompt([
@@ -24,12 +36,69 @@ function addDepartment() {
             },
         ])
         .then((input) => {
-            db.query('INSERT INTO Department (id, name)', function (err, results) {
-                console.log(input.department);
-            });
+            return db.promise().query('INSERT INTO Department (id, department_name) values (1, "test")');
+        })
+        .then(result => {
+            console.log(result);
+        })
+};
+
+function addRole() {
+    inquirer
+        .prompt([
+            {
+                type: 'input',
+                message: 'Enter Title of Role.',
+                name: 'roleName',
+            },
+            {
+                type: 'input',
+                message: 'Enter Salary of Role.',
+                name: 'roleSalary',
+            },
+            {
+                type: 'input',
+                message: 'Enter Department Role Will Be in.',
+                name: 'roleDepartment',
+            },
+        ])
+        .then((input) => {
+            return db.promise().query('INSERT INTO Role (id, title, salary, department_id) values (1, "titleIn", 10.15, 1)');
         })
 
-}
+};
+
+function addEmployee() {
+    inquirer
+        .prompt([
+            {
+                type: 'input',
+                message: 'Enter First Name of Employee.',
+                name: 'firstName',
+            },
+            {
+                type: 'input',
+                message: 'Enter Last Name of Employee.',
+                name: 'lastName',
+            },
+            {
+                type: 'input',
+                message: 'Enter Role of Employee',
+                name: 'employeeRole',
+            },
+            {
+                type: 'input',
+                message: 'Enter Manager of Employee',
+                name: 'employeeManager',
+            },
+        ])
+        .then((input) => {
+            return db.promise().query('INSERT INTO Employee (id, first_name, last_name, role_id, manager_id) values (1, "first", "last", 1, 1)');
+        })
+
+};
+
+
 
 inquirer
     .prompt([
@@ -55,19 +124,17 @@ inquirer
             exit();
             console.log('Thank you for using the Employee Tracker!');
         } else if (response.menuChoices === 'View All Departments') {
-            db.query('SELECT * FROM Department', function (err, results) {
-                console.log(results);
-            });
+            getDepartments();
         } else if (response.menuChoices === 'View All Roles') {
-            db.query('SELECT * FROM Role', function (err, results) {
-                console.log(results);
-            });
+            getRoles();
         } else if (response.menuChoices === 'View All Employees') {
-            db.query('SELECT * FROM Employee', function (err, results) {
-                console.log(results);
-            });
+            getEmployees();
         } else if (response.menuChoices === 'Add A Department') {
-            addDepartment()
+            addDepartment();
+        } else if (response.menuChoices === 'Add A Role') {
+            addRole();
+        } else if (response.menuChoices === 'Add An Employee') {
+            addEmployee();
         }
     });
 
