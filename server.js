@@ -7,23 +7,24 @@ const db = mysql.createConnection(
         password: 'password',
         database: 'employees_db'
     },
-    console.log(`Connected to the employees_db database.`)
+    console.log(`Welcome to the Employee Tracker!`)
 );
 
 function exit() {
+    console.log('Thank you for using the Employee Tracker!');
     process.exit()
 };
 
 function getDepartments() {
-    return db.promise().query('SELECT * FROM Department');
+    return db.promise().query('SELECT * FROM departments');
 };
 
 function getRoles() {
-    return db.promise().query('SELECT * FROM Role');
+    return db.promise().query('SELECT * FROM roles');
 };
 
 function getEmployees() {
-    return db.promise().query('SELECT * FROM Employee');
+    return db.promise().query('SELECT * FROM employee');
 }
 
 function addDepartment() {
@@ -35,8 +36,9 @@ function addDepartment() {
                 name: 'department',
             },
         ])
-        .then((input) => {
-            return db.promise().query('INSERT INTO Department (id, department_name) values (1, "test")');
+        .then((result) => {
+            return db.promise().query('INSERT INTO departments (departments_name) values (?)', result.department);
+            console.log(result);
         })
         .then(result => {
             console.log(result);
@@ -63,7 +65,7 @@ function addRole() {
             },
         ])
         .then((input) => {
-            return db.promise().query('INSERT INTO Role (id, title, salary, department_id) values (1, "titleIn", 10.15, 1)');
+            return db.promise().query('INSERT INTO roles (title, salary, department_id) values (?, ?, ?)', input.title, input.salary, input.department_id);
         })
 
 };
@@ -93,7 +95,7 @@ function addEmployee() {
             },
         ])
         .then((input) => {
-            return db.promise().query('INSERT INTO Employee (id, first_name, last_name, role_id, manager_id) values (1, "first", "last", 1, 1)');
+            return db.promise().query('INSERT INTO employee (id, first_name, last_name, role_id, manager_id) values (1, "first", "last", 1, 1)');
         })
 
 };
@@ -122,7 +124,6 @@ inquirer
         console.log(response.menuChoices);
         if (response.menuChoices === 'Exit') {
             exit();
-            console.log('Thank you for using the Employee Tracker!');
         } else if (response.menuChoices === 'View All Departments') {
             getDepartments();
         } else if (response.menuChoices === 'View All Roles') {
