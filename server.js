@@ -38,7 +38,6 @@ function addDepartment() {
         ])
         .then((result) => {
             return db.promise().query('INSERT INTO departments (departments_name) values (?)', result.department);
-            console.log(result);
         })
         .then(result => {
             console.log(result);
