@@ -1,5 +1,6 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
+
 function startTracker() {
     inquirer
         .prompt([
@@ -24,14 +25,21 @@ function startTracker() {
             if (response.menuChoices === 'Exit') {
                 exit();
             } else if (response.menuChoices === 'View All Departments') {
-                getDepartments();
-                startTracker();
+                sendDepartments()
+                    .then(() => {
+                        startTracker();
+                    })
+
             } else if (response.menuChoices === 'View All Roles') {
-                getRoles();
-                startTracker();
+                sendRoles()
+                    .then(() => {
+                        startTracker();
+                    })
             } else if (response.menuChoices === 'View All Employees') {
-                getEmployees();
-                startTracker();
+                sendEmployees()
+                    .then(() => {
+                        startTracker();
+                    })
             } else if (response.menuChoices === 'Add A Department') {
                 addDepartment();
             } else if (response.menuChoices === 'Add A Role') {
@@ -41,6 +49,7 @@ function startTracker() {
             }
         });
 };
+
 const db = mysql.createConnection(
     {
         host: '127.0.0.1',
@@ -61,15 +70,39 @@ function exit() {
 
 function getDepartments() {
     return db.promise().query('SELECT * FROM departments');
-
 };
+
+function sendDepartments() {
+    return getDepartments()
+        .then((result) => {
+            printTable(result[0]);
+        })
+}
 
 function getRoles() {
     return db.promise().query('SELECT * FROM roles');
 };
 
+function sendRoles() {
+    return getRoles()
+        .then((result) => {
+            printTable(result[0]);
+        })
+}
+
 function getEmployees() {
     return db.promise().query('SELECT * FROM employee');
+}
+
+function sendEmployees() {
+    return getEmployees()
+        .then((result) => {
+            printTable(result[0]);
+        })
+}
+
+function printTable(data) {
+    console.table(data);
 }
 
 function addDepartment() {
@@ -82,10 +115,11 @@ function addDepartment() {
             },
         ])
         .then((result) => {
+            console.log(result);
             return db.promise().query('INSERT INTO departments (departments_name) values (?)', result.department);
         })
         .then((result) => {
-            return db.promise().query('SELECT * FROM departments');
+            return sendDepartments();
         })
         .then((result) => {
             startTracker();
@@ -93,6 +127,10 @@ function addDepartment() {
 };
 
 function addRole() {
+    const departments = [
+        { name: 'Sales', value: 1 },
+        { name: 'Customer Service', value: 2 },
+    ];
     inquirer
         .prompt([
             {
@@ -108,19 +146,16 @@ function addRole() {
             {
                 type: 'list',
                 message: 'Which department does the role belong to?',
-                choices: [
-                    { name: 'Sales', value: 'Sales' },
-                    { name: 'Customer Service', value: 'Customer Service' },
-                ],
+                choices: departments,
                 name: 'departmentChoice',
             },
         ])
         .then((result) => {
-            console.log(result.roleName);
-            return db.promise().query('INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)', result.roleName, result.roleSalary, result.departmentChoice);
+            console.log(result);
+            return db.promise().query('INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)', [result.roleName, result.roleSalary, result.departmentChoice]);
         })
         .then((result) => {
-            return db.promise().query('SELECT * FROM roles');
+            return sendRoles();
         })
         .then((result) => {
             startTracker();
@@ -129,6 +164,14 @@ function addRole() {
 };
 
 function addEmployee() {
+    const roles = [
+        { name: 'Manager', value: 1 },
+        { name: 'Technician', value: 2 },
+    ];
+    const manager = [
+        { name: 'John Smith', value: 1 },
+        { name: 'Joe Dart', value: 2 },
+    ];
     inquirer
         .prompt([
             {
@@ -144,27 +187,21 @@ function addEmployee() {
             {
                 type: 'list',
                 message: 'What is the employees role?',
-                choices: [
-                    { name: 'Sales', value: 'Sales' },
-                    { name: 'Customer Service', value: 'Customer Service' },
-                ],
+                choices: roles,
                 name: 'employeeRole',
             },
             {
                 type: 'list',
                 message: 'Who is the employees manager?',
-                choices: [
-                    { name: 'John Smith', value: 'John Smith' },
-                    { name: 'Joe Dart', value: 'Joe Dart' },
-                ],
+                choices: manager,
                 name: 'employeeManager',
             },
         ])
         .then((result) => {
-            return db.promise().query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', result.firstName, result.lastName, result.employeeRole, result.employeeManager);
+            return db.promise().query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', [result.firstName, result.lastName, result.employeeRole, result.employeeManager]);
         })
         .then((result) => {
-            return db.promise().query('SELECT * FROM roles');
+            return sendEmployees();
         })
         .then((result) => {
             startTracker();
@@ -172,42 +209,4 @@ function addEmployee() {
 };
 
 
-// function startTracker() {
-//     inquirer
-//         .prompt([
-//             {
-//                 type: 'list',
-//                 message: 'What would you like to do?',
-//                 choices: [
-//                     { name: 'View All Departments', value: 'View All Departments' },
-//                     { name: 'View All Roles', value: 'View All Roles' },
-//                     { name: 'View All Employees', value: 'View All Employees' },
-//                     { name: 'Add A Department', value: 'Add A Department' },
-//                     { name: 'Add A Role', value: 'Add A Role' },
-//                     { name: 'Add An Employee', value: 'Add An Employee' },
-//                     { name: 'Update An Employee Role', value: 'Update An Employee Role' },
-//                     { name: 'Exit', value: 'Exit' },
-//                 ],
-//                 name: 'menuChoices',
-//             },
-//         ])
-//         .then((response) => {
-//             console.log(response.menuChoices);
-//             if (response.menuChoices === 'Exit') {
-//                 exit();
-//             } else if (response.menuChoices === 'View All Departments') {
-//                 getDepartments();
-//             } else if (response.menuChoices === 'View All Roles') {
-//                 getRoles();
-//             } else if (response.menuChoices === 'View All Employees') {
-//                 getEmployees();
-//             } else if (response.menuChoices === 'Add A Department') {
-//                 addDepartment();
-//             } else if (response.menuChoices === 'Add A Role') {
-//                 addRole();
-//             } else if (response.menuChoices === 'Add An Employee') {
-//                 addEmployee();
-//             }
-//         });
-// };
 
