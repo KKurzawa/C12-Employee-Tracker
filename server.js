@@ -46,6 +46,8 @@ function startTracker() {
                 addRole();
             } else if (response.menuChoices === 'Add An Employee') {
                 addEmployee();
+            } else if (response.menuChoices === 'Update Employee Role') {
+                updateRole();
             }
         });
 };
@@ -69,7 +71,10 @@ function exit() {
 };
 
 function getDepartments() {
-    return db.promise().query('SELECT * FROM departments');
+    return db.promise().query('SELECT * FROM departments')
+        .then((result) => {
+            return result[0];
+        })
 };
 
 function sendDepartments() {
@@ -127,39 +132,42 @@ function addDepartment() {
 };
 
 function addRole() {
-    const departments = [
-        { name: 'Sales', value: 1 },
-        { name: 'Customer Service', value: 2 },
-    ];
-    inquirer
-        .prompt([
-            {
-                type: 'input',
-                message: 'Enter Title of Role.',
-                name: 'roleName',
-            },
-            {
-                type: 'input',
-                message: 'Enter Salary of Role.',
-                name: 'roleSalary',
-            },
-            {
-                type: 'list',
-                message: 'Which department does the role belong to?',
-                choices: departments,
-                name: 'departmentChoice',
-            },
-        ])
-        .then((result) => {
-            console.log(result);
-            return db.promise().query('INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)', [result.roleName, result.roleSalary, result.departmentChoice]);
+    return getDepartments()
+        .then((databaseDepartments) => {
+            const departments = databaseDepartments.map((department) => {
+                return { value: department.id, name: department.departments_name }
+            })
+            return inquirer
+                .prompt([
+                    {
+                        type: 'input',
+                        message: 'Enter Title of Role.',
+                        name: 'roleName',
+                    },
+                    {
+                        type: 'input',
+                        message: 'Enter Salary of Role.',
+                        name: 'roleSalary',
+                    },
+                    {
+                        type: 'list',
+                        message: 'Which department does the role belong to?',
+                        choices: departments,
+                        name: 'departmentChoice',
+                    },
+                ])
+                .then((result) => {
+                    console.log(result);
+                    return db.promise().query('INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)', [result.roleName, result.roleSalary, result.departmentChoice]);
+                })
+                .then((result) => {
+                    return sendRoles();
+                })
+                .then((result) => {
+                    startTracker();
+                })
         })
-        .then((result) => {
-            return sendRoles();
-        })
-        .then((result) => {
-            startTracker();
-        })
+
 
 };
 
@@ -207,6 +215,32 @@ function addEmployee() {
             startTracker();
         })
 };
+
+function updateRole() {
+    const employee = [
+        { name: 'Anne Frank' },
+        { name: 'Marc Maron' },
+    ];
+    const newRole = [
+        { name: 'Manger' },
+        { name: 'Minion' },
+    ];
+    inquirer
+        .prompt([
+            {
+                type: 'list',
+                message: 'Which employees role would you like to update?',
+                choices: employee,
+                name: 'reasignedEmployee',
+            },
+            {
+                type: 'list',
+                message: 'Which role do you want to assign the listed employee?',
+                choices: newRole,
+                name: 'reasignedRole',
+            },
+        ])
+}
 
 
 
