@@ -29,7 +29,6 @@ function startTracker() {
                     .then(() => {
                         startTracker();
                     })
-
             } else if (response.menuChoices === 'View All Roles') {
                 sendRoles()
                     .then(() => {
@@ -59,7 +58,11 @@ const db = mysql.createConnection(
         password: 'password',
         database: 'employees_db'
     },
-    console.log(`Welcome to the Employee Tracker!`)
+    console.log("***********************************")
+    , console.log("*                                 *")
+    , console.log("*        EMPLOYEE MANAGER         *")
+    , console.log("*                                 *")
+    , console.log("***********************************")
 
 );
 
@@ -80,33 +83,40 @@ function getDepartments() {
 function sendDepartments() {
     return getDepartments()
         .then((result) => {
-            printTable(result[0]);
+            printTable(result);
         })
 }
 
 function getRoles() {
-    return db.promise().query('SELECT * FROM roles');
+    return db.promise().query('SELECT * FROM roles')
+        .then((result) => {
+            return result[0];
+        })
 };
 
 function sendRoles() {
     return getRoles()
         .then((result) => {
-            printTable(result[0]);
+            printTable(result);
         })
 }
 
 function getEmployees() {
-    return db.promise().query('SELECT * FROM employee');
+    return db.promise().query('SELECT * FROM employee')
+        .then((result) => {
+            return result[0];
+        })
 }
 
 function sendEmployees() {
     return getEmployees()
         .then((result) => {
-            printTable(result[0]);
+            printTable(result);
         })
 }
 
 function printTable(data) {
+    // console.log(data);
     console.table(data);
 }
 
@@ -154,6 +164,7 @@ function addRole() {
                         message: 'Which department does the role belong to?',
                         choices: departments,
                         name: 'departmentChoice',
+
                     },
                 ])
                 .then((result) => {
@@ -172,47 +183,66 @@ function addRole() {
 };
 
 function addEmployee() {
-    const roles = [
-        { name: 'Manager', value: 1 },
-        { name: 'Technician', value: 2 },
-    ];
-    const manager = [
-        { name: 'John Smith', value: 1 },
-        { name: 'Joe Dart', value: 2 },
-    ];
-    inquirer
-        .prompt([
-            {
-                type: 'input',
-                message: 'Enter First Name of Employee.',
-                name: 'firstName',
-            },
-            {
-                type: 'input',
-                message: 'Enter Last Name of Employee.',
-                name: 'lastName',
-            },
-            {
-                type: 'list',
-                message: 'What is the employees role?',
-                choices: roles,
-                name: 'employeeRole',
-            },
-            {
-                type: 'list',
-                message: 'Who is the employees manager?',
-                choices: manager,
-                name: 'employeeManager',
-            },
-        ])
-        .then((result) => {
-            return db.promise().query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', [result.firstName, result.lastName, result.employeeRole, result.employeeManager]);
-        })
-        .then((result) => {
-            return sendEmployees();
-        })
-        .then((result) => {
-            startTracker();
+    return getRoles()
+        .then((databaseRoles) => {
+            const roles = databaseRoles.map((role) => {
+                return { value: role.id, name: role.title }
+            })
+            return getEmployees()
+                .then((databaseEmployees) => {
+                    const employees = databaseEmployees.map((employee) => {
+                        const name = employee.first_name + " " + employee.last_name
+                        return { value: employee.id, name: name }
+                    })
+                    employees.push({
+                        value: null, name: 'none'
+                    })
+                    // const roles = [
+                    //     { name: 'Manager', value: 1 },
+                    //     { name: 'Technician', value: 2 },
+                    // 
+                    // const manager = [
+                    //     { name: 'John Smith', value: 1 },
+                    //     { name: 'Joe Dart', value: 2 },
+                    //     { name: 'Jill Jack', value: 3 },
+
+                    //     { name: 'Anne Spraugue', value: 4 }
+                    // ];
+                    return inquirer
+                        .prompt([
+                            {
+                                type: 'input',
+                                message: 'Enter First Name of Employee.',
+                                name: 'firstName',
+                            },
+                            {
+                                type: 'input',
+                                message: 'Enter Last Name of Employee.',
+                                name: 'lastName',
+                            },
+                            {
+                                type: 'list',
+                                message: 'What is the employees role?',
+                                choices: roles,
+                                name: 'employeeRole',
+                            },
+                            {
+                                type: 'list',
+                                message: 'Who is the employees manager?',
+                                choices: employees,
+                                name: 'employeeManager',
+                            },
+                        ])
+                        .then((result) => {
+                            return db.promise().query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', [result.firstName, result.lastName, result.employeeRole, result.employeeManager]);
+                        })
+                        .then((result) => {
+                            return sendEmployees();
+                        })
+                        .then((result) => {
+                            startTracker();
+                        })
+                })
         })
 };
 
