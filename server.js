@@ -73,6 +73,14 @@ function exit() {
 };
 
 function getDepartments() {
+    const sql = `SELECT departments.id AS ID, departments.departments_name AS Department FROM departments`;
+    return db.promise().query(sql)
+        .then((result) => {
+            return result[0];
+        })
+};
+
+function getDepartmentsAgain() {
     const sql = `SELECT * FROM departments`;
     return db.promise().query(sql)
         .then((result) => {
@@ -85,7 +93,7 @@ function sendDepartments() {
         .then((result) => {
             printTable(result);
         })
-}
+};
 
 function getRoles() {
     const sql = `SELECT roles.id AS ID, roles.title AS Role, departments.departments_name AS Department, roles.salary AS Salary FROM roles LEFT JOIN departments ON roles.department_id=departments.id;`
@@ -94,13 +102,6 @@ function getRoles() {
             return result[0];
         })
 };
-
-function getEmployees() {
-    return db.promise().query('SELECT employee.id AS ID, CONCAT(employee.first_name, " " , employee.last_name) AS Name, roles.title AS Role, departments.departments_name AS Department, roles.salary AS Salary, CONCAT(manager.first_name, " " , manager.last_name) AS Manager FROM employee LEFT JOIN roles ON employee.manager_id=roles.id LEFT JOIN employee manager ON manager.id=employee.manager_id LEFT JOIN departments ON roles.department_id=departments.id;')
-        .then((result) => {
-            return result[0];
-        })
-}
 
 function getRolesAgain() {
     const sql = `SELECT * FROM roles`;
@@ -115,27 +116,32 @@ function sendRoles() {
         .then((result) => {
             printTable(result);
         })
-}
+};
 
-
+function getEmployees() {
+    return db.promise().query('SELECT employee.id AS ID, CONCAT(employee.first_name, " " , employee.last_name) AS Name, roles.title AS Role, departments.departments_name AS Department, roles.salary AS Salary, CONCAT(manager.first_name, " " , manager.last_name) AS Manager FROM employee LEFT JOIN roles ON employee.manager_id=roles.id LEFT JOIN employee manager ON manager.id=employee.manager_id LEFT JOIN departments ON roles.department_id=departments.id;')
+        .then((result) => {
+            return result[0];
+        })
+};
 
 function getEmployeesAgain() {
     return db.promise().query('SELECT * FROM employee')
         .then((result) => {
             return result[0];
         })
-}
+};
 
 function sendEmployees() {
     return getEmployees()
         .then((result) => {
             printTable(result);
         })
-}
+};
 
 function printTable(data) {
     console.table(data);
-}
+};
 
 function addDepartment() {
     inquirer
@@ -147,7 +153,6 @@ function addDepartment() {
             },
         ])
         .then((result) => {
-            console.log(result);
             return db.promise().query('INSERT INTO departments (departments_name) values (?)', result.department);
         })
         .then((result) => {
@@ -159,7 +164,7 @@ function addDepartment() {
 };
 
 function addRole() {
-    return getDepartments()
+    return getDepartmentsAgain()
         .then((databaseDepartments) => {
             const departments = databaseDepartments.map((department) => {
                 return { value: department.id, name: department.departments_name }
@@ -185,7 +190,6 @@ function addRole() {
                     },
                 ])
                 .then((result) => {
-                    console.log(result);
                     return db.promise().query('INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)', [result.roleName, result.roleSalary, result.departmentChoice]);
                 })
                 .then((result) => {
