@@ -111,6 +111,14 @@ function getRolesAgain() {
         })
 };
 
+function getRolesAgainAgain() {
+    const sql = `SELECT roles.id AS ID, roles.title AS Role FROM roles;`
+    return db.promise().query(sql)
+        .then((result) => {
+            return result[0];
+        })
+};
+
 function sendRoles() {
     return getRoles()
         .then((result) => {
@@ -119,7 +127,7 @@ function sendRoles() {
 };
 
 function getEmployees() {
-    return db.promise().query('SELECT employee.id AS ID, CONCAT(employee.first_name, " " , employee.last_name) AS Name, roles.title AS Role, departments.departments_name AS Department, roles.salary AS Salary, CONCAT(manager.first_name, " " , manager.last_name) AS Manager FROM employee LEFT JOIN roles ON employee.manager_id=roles.id LEFT JOIN employee manager ON manager.id=employee.manager_id LEFT JOIN departments ON roles.department_id=departments.id;')
+    return db.promise().query('SELECT employee.id AS ID, CONCAT(employee.first_name, " " , employee.last_name) AS Name, roles.title AS Role, departments.departments_name AS Department, roles.salary AS Salary, CONCAT(manager.first_name, " " , manager.last_name) AS Manager FROM employee LEFT JOIN roles ON employee.role_id=roles.id LEFT JOIN employee manager ON manager.id=employee.manager_id LEFT JOIN departments ON roles.department_id=departments.id;')
         .then((result) => {
             return result[0];
         })
@@ -281,6 +289,9 @@ function updateRole() {
                                 name: 'reasignedRole',
                             },
                         ])
+                        .then((result) => {
+                            return db.promise().query('UPDATE employee SET role_id = ?', [result.reasignedRole]);
+                        })
                         .then((result) => {
                             return sendEmployees();
                         })
