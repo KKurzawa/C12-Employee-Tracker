@@ -289,8 +289,10 @@ function updateRole() {
                                 name: 'reasignedRole',
                             },
                         ])
+
                         .then((result) => {
-                            return db.promise().query('UPDATE employee SET role_id = ?', [result.reasignedRole]);
+                            const chosenEmployee = result.reasignedEmployee;
+                            return db.promise().query('UPDATE employee SET role_id = ? WHERE employee.id = ?', [result.reasignedRole, chosenEmployee]);
                         })
                         .then((result) => {
                             return sendEmployees();

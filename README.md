@@ -9,8 +9,6 @@ Any business owner needs to keep track of the departments, roles, and employees 
 
 Once the user starts the application they are prompted to select what they'd like to do.  They are able to view departments/roles/employees in which they will see a table displaying their selection.  The user is also able to add to departments/roles/employees by answering the corresponding questions.  Once questions are answered the updated table is displayed.  The user can also select to update an employee role which will display the updated employee table upon answering the prompted questions.  Choosing the option 'Exit' from the initial prompt closes the application.
 
-Currently an update to an employee's role does not get saved in the database.  This improvement will be made in the future.
-
 Walkthrough Video: https://watch.screencastify.com/v/PGxulLViHlYoR9th7k22
 
 Github Repository: https://github.com/KKurzawa/C12-Employee-Tracker
