@@ -21,7 +21,6 @@ function startTracker() {
             },
         ])
         .then((response) => {
-            console.log(response.menuChoices);
             if (response.menuChoices === 'Exit') {
                 exit();
             } else if (response.menuChoices === 'View All Departments') {
@@ -45,7 +44,7 @@ function startTracker() {
                 addRole();
             } else if (response.menuChoices === 'Add An Employee') {
                 addEmployee();
-            } else if (response.menuChoices === 'Update Employee Role') {
+            } else if (response.menuChoices === 'Update An Employee Role') {
                 updateRole();
             }
         });
@@ -74,7 +73,8 @@ function exit() {
 };
 
 function getDepartments() {
-    return db.promise().query('SELECT * FROM departments')
+    const sql = `SELECT * FROM departments`;
+    return db.promise().query(sql)
         .then((result) => {
             return result[0];
         })
@@ -88,7 +88,23 @@ function sendDepartments() {
 }
 
 function getRoles() {
-    return db.promise().query('SELECT * FROM roles')
+    const sql = `SELECT roles.id AS ID, roles.title AS Role, departments.departments_name AS Department, roles.salary AS Salary FROM roles LEFT JOIN departments ON roles.department_id=departments.id;`
+    return db.promise().query(sql)
+        .then((result) => {
+            return result[0];
+        })
+};
+
+function getEmployees() {
+    return db.promise().query('SELECT employee.id AS ID, CONCAT(employee.first_name, " " , employee.last_name) AS Name, roles.title AS Role, departments.departments_name AS Department, roles.salary AS Salary, CONCAT(manager.first_name, " " , manager.last_name) AS Manager FROM employee LEFT JOIN roles ON employee.manager_id=roles.id LEFT JOIN employee manager ON manager.id=employee.manager_id LEFT JOIN departments ON roles.department_id=departments.id;')
+        .then((result) => {
+            return result[0];
+        })
+}
+
+function getRolesAgain() {
+    const sql = `SELECT * FROM roles`;
+    return db.promise().query(sql)
         .then((result) => {
             return result[0];
         })
@@ -101,7 +117,9 @@ function sendRoles() {
         })
 }
 
-function getEmployees() {
+
+
+function getEmployeesAgain() {
     return db.promise().query('SELECT * FROM employee')
         .then((result) => {
             return result[0];
@@ -116,7 +134,6 @@ function sendEmployees() {
 }
 
 function printTable(data) {
-    // console.log(data);
     console.table(data);
 }
 
@@ -178,17 +195,15 @@ function addRole() {
                     startTracker();
                 })
         })
-
-
 };
 
 function addEmployee() {
-    return getRoles()
+    return getRolesAgain()
         .then((databaseRoles) => {
             const roles = databaseRoles.map((role) => {
                 return { value: role.id, name: role.title }
             })
-            return getEmployees()
+            return getEmployeesAgain()
                 .then((databaseEmployees) => {
                     const employees = databaseEmployees.map((employee) => {
                         const name = employee.first_name + " " + employee.last_name
@@ -197,17 +212,6 @@ function addEmployee() {
                     employees.push({
                         value: null, name: 'none'
                     })
-                    // const roles = [
-                    //     { name: 'Manager', value: 1 },
-                    //     { name: 'Technician', value: 2 },
-                    // 
-                    // const manager = [
-                    //     { name: 'John Smith', value: 1 },
-                    //     { name: 'Joe Dart', value: 2 },
-                    //     { name: 'Jill Jack', value: 3 },
-
-                    //     { name: 'Anne Spraugue', value: 4 }
-                    // ];
                     return inquirer
                         .prompt([
                             {
@@ -247,30 +251,42 @@ function addEmployee() {
 };
 
 function updateRole() {
-    const employee = [
-        { name: 'Anne Frank' },
-        { name: 'Marc Maron' },
-    ];
-    const newRole = [
-        { name: 'Manger' },
-        { name: 'Minion' },
-    ];
-    inquirer
-        .prompt([
-            {
-                type: 'list',
-                message: 'Which employees role would you like to update?',
-                choices: employee,
-                name: 'reasignedEmployee',
-            },
-            {
-                type: 'list',
-                message: 'Which role do you want to assign the listed employee?',
-                choices: newRole,
-                name: 'reasignedRole',
-            },
-        ])
-}
+    return getEmployeesAgain()
+        .then((databaseEmployees) => {
+            const employees = databaseEmployees.map((employee) => {
+                const name = employee.first_name + " " + employee.last_name
+                return { value: employee.id, name: name }
+            })
+            return getRolesAgain()
+                .then((databaseRoles) => {
+                    const roles = databaseRoles.map((role) => {
+                        return { value: role.id, name: role.title }
+                    })
+                    return inquirer
+                        .prompt([
+                            {
+                                type: 'list',
+                                message: 'Which employees role would you like to update?',
+                                choices: employees,
+                                name: 'reasignedEmployee',
+                            },
+                            {
+                                type: 'list',
+                                message: 'Which role do you want to assign the listed employee?',
+                                choices: roles,
+                                name: 'reasignedRole',
+                            },
+                        ])
+                        .then((result) => {
+                            return sendEmployees();
+                        })
+                        .then((result) => {
+                            startTracker();
+                        })
+
+                })
+        })
+};
 
 
 

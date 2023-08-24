@@ -7,6 +7,8 @@ Any business owner needs to keep track of the departments, roles, and employees 
 
 ## Usage
 
+Once the user starts the application they are prompted to select what they'd like to do.  They are able to view departments/roles/employees in which they will see a table displaying their selection.  The user is also able to add to departments/roles/employees by answering the corresponding questions.  Once questions are answered the updated table is displayed.  The user can also select to update an employee role which will display the updated employee table upon answering the prompted questions.  Choosing the option 'Exit' from the initial prompt closes the application.
+
 
 Walkthrough Video: 
 
