@@ -11,7 +11,7 @@ Once the user starts the application they are prompted to select what they'd lik
 
 Currently the Employees table does not display employees correctly and an update to an employee's role does not get saved in the database.  These are improvements to made in the future.
 
-Walkthrough Video: 
+Walkthrough Video: https://watch.screencastify.com/v/PGxulLViHlYoR9th7k22
 
 Github Repository: https://github.com/KKurzawa/C12-Employee-Tracker
 
