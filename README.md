@@ -11,7 +11,7 @@ Once the user starts the application they are prompted to select what they'd lik
 
 Walkthrough Video: https://watch.screencastify.com/v/pxYPz1TXRUjAE4CRzpLD
 
-Github Repository: https://github.com/KKurzawa/C12-Employee-Tracker
+Github Repository: https://github.com/KKurzawa/Employee-Tracker
 
 
 
